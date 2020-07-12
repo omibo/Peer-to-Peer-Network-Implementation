@@ -24,6 +24,9 @@ class Peer(Thread):
         self.lastSentTime = [0] * len(neighboursAddress)
         self.lastRecievedTime = [0] * len(neighboursAddress)
 
+        self.sendThread = None
+        self.rcvThread = None
+
         self.sock = None
 
     def creatSocket(self):
@@ -31,17 +34,23 @@ class Peer(Thread):
         self.sock.bind(self.peerAddress)
 
     def sendData(self):
-        Timer(SEND_PACKET_PERIOD, self.sendData).start()
+        self.sendThread = Timer(SEND_PACKET_PERIOD, self.sendData)
+        self.sendThread.start()
         for i in range(len(self.neighboursAddress)):
             self.lastSentTime[i] = time.time()
             self.sock.sendto(self.createHelloPacket(i) , self.neighboursAddress[i])
 
     def recieveData(self):
-        Timer(SEND_PACKET_PERIOD, self.recieveData).start()
+        self.rcvThread = Timer(SEND_PACKET_PERIOD, self.recieveData)
+        self.rcvThread.start()
         for i in range(len(self.neighboursAddress)):
-            a, b = self.sock.recvfrom(1024)
-            print("I " + str(self.peerAddress) + " rcv " + str(a))
-            self.lastRecievedTime[i] = time.time()
+            try:
+                a, b = self.sock.recvfrom(1024)
+                print("I " + str(self.peerAddress) + " rcv " + str(a))
+                self.lastRecievedTime[i] = time.time()
+            except socket.timeout:
+                print("\n*******************EEEEE CHRA PM NADADI PAS????*******************\n")
+
 
     def run(self):
         self.creatSocket()
@@ -51,6 +60,7 @@ class Peer(Thread):
         self.sendData()
         self.sock.settimeout(0.1)
         self.recieveData()
+        
 
         # self.sock.closse()
 
@@ -59,4 +69,6 @@ class Peer(Thread):
         return bytes(pakcetData, "utf-8")
 
     def close(self):
+        self.sendThread.cancel()
+        self.rcvThread.cancel()
         self.sock.close()
