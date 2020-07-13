@@ -30,14 +30,13 @@ class P2PNetwork(Thread):
 
     def createNodes(self):
         for i in range(PEERS_NUM):
-            peerIP, peerPort = f"127.0.0.1", 10221+i
+            peerIP, peerPort = f"127.0.0.1", 10091+i
             self.nodes.append((peerIP, peerPort))
             
     def deleteRandomPeer(self):
         Timer(SELECT_PERR_FOR_SILENT, self.deleteRandomPeer).start()
         peerNum = random.randint(0, len(self.nodes)-1)
-        print("\nRANDOM NUM: " + str(peerNum))
-        print("DELETE: " + self.nodes[peerNum][0] + " " + str(self.nodes[peerNum][1]))
+        print("\nDELETE: " + str(self.nodes[peerNum][1]))
         print(time.time())
         self.closePeer(self.threadConnection[peerNum])
         del self.threadConnection[peerNum]
@@ -45,7 +44,7 @@ class P2PNetwork(Thread):
         del self.nodes[peerNum]
 
     def createPeer(self, IP, port):
-        print("\nCREATE: " + IP + str(port))
+        print("\nCREATE: " + str(port))
         print(time.time())
         self.nodes.append((IP, port))
         peerThread = Peer((IP, port), self.nodes)
@@ -76,7 +75,7 @@ if __name__ == '__main__':
     server.createNodes()
     # server.selectRandomPeer()
     server.start()
-    time.sleep(10)
+    time.sleep(11)
     server.deleteRandomPeer()
     if input() == 'q':
         print("IIIIIIII")
