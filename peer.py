@@ -2,17 +2,7 @@ from threading import Thread, Timer
 import socket
 
 import time
-
-PEERS_NUM = 4
-NEIGHBOURS_NUM = 1
-
-SEND_PACKET_PERIOD = 2.0
-REMOVE_NEIGHBOUR_PERIOD = 8.0
-
-PEER_SILENT_PERIOD = 20
-SELECT_PERR_FOR_SILENT = 10
-
-DROP_RATE = 5
+import configs
 
 class Peer(Thread):
     def __init__(self, peerAddress, neighboursAddress):
@@ -34,14 +24,14 @@ class Peer(Thread):
         self.sock.bind(self.peerAddress)
 
     def sendData(self):
-        self.sendThread = Timer(SEND_PACKET_PERIOD, self.sendData)
+        self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
         self.sendThread.start()
         for neighbour in self.neighboursAddress:
             self.lastSentTime[neighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(neighbour) , neighbour)
 
     def recieveData(self):
-        self.rcvThread = Timer(SEND_PACKET_PERIOD, self.recieveData)
+        self.rcvThread = Timer(configs.SEND_PACKET_PERIOD, self.recieveData)
         self.rcvThread.start()
 
         newNeighbours = []
