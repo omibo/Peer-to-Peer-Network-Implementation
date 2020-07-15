@@ -9,7 +9,7 @@ class Peer(Thread):
         Thread.__init__(self)
 
         self.peerAddress = peerAddress
-        self.neighboursAddress = neighboursAddress
+        self.neighboursAddress = []
 
         self.lastSentTime = dict()
         self.lastRecievedTime = dict()
@@ -36,7 +36,7 @@ class Peer(Thread):
 
         newNeighbours = []
 
-        msg = f"Peer {self.peerAddress}:\n"
+        msg = f"\nPeer {self.peerAddress}:\n"
 
         for neighbour in self.neighboursAddress:
             if self.lastRecievedTime.get(neighbour) is not None:

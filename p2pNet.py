@@ -27,7 +27,7 @@ class P2PNetwork(Thread):
 
     def createPeer(self, IP, port):
         print("\nCREATE: " + str(port) + " TIME: ", time.time())
-        self.availableNodes.append(address)
+        self.availableNodes.append((IP, port))
         self.runThread((IP, port))
 
     def runThread(self, address):
