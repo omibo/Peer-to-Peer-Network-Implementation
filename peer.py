@@ -5,7 +5,7 @@ import time
 import configs
 
 class Peer(Thread):
-    def __init__(self, peerAddress, neighboursAddress):
+    def __init__(self, peerAddress):
         Thread.__init__(self)
 
         self.peerAddress = peerAddress
