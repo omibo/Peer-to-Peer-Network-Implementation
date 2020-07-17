@@ -36,6 +36,7 @@ class P2PNetwork(Thread):
         peerThread.start()
 
     def run(self):
+        self.startTime = time.time()
         for i in range(configs.PEERS_NUM):
             self.runThread((configs.allNodes[i]))
 
@@ -49,12 +50,34 @@ class P2PNetwork(Thread):
             thread.close()
             thread.join()
 
+    def checkPeers(self):
+        Timer(2, self.checkPeers).start()
+        notCompleted = configs.PEERS_NUM
+        msg = ""
+        for thread in self.threadConnection:
+            msg += f"\n{thread.peerAddress[1]}"
+            msg += "\tneighbours: {"
+            for n in thread.neighboursAddress:
+                msg += f" {n[1]}"
+            msg += " } \trequested: {"
+            for n in thread.requested:
+                msg += f" {n[1]}"
+            msg += " }"
+        print(msg)
+        # for thread in self.threadConnection:
+        #     print(thread.peerAddress ,thread.report())
+        #     if thread.report() == 0:
+        #         notCompleted -= 1
+        if notCompleted == 0:
+            print(time.time() - self.startTime)
+            self.close()
 
 if __name__ == '__main__':
     server = P2PNetwork()
     server.start()
+    server.checkPeers()
     time.sleep(11)
-    server.deleteRandomPeer()
+    # server.deleteRandomPeer()
     if input() == 'q':
         print("IIIIIIII")
         server.close()
