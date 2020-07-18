@@ -51,7 +51,7 @@ class P2PNetwork(Thread):
             thread.join()
 
     def checkPeers(self):
-        Timer(2, self.checkPeers).start()
+        Timer(1, self.checkPeers).start()
         notCompleted = configs.PEERS_NUM
         msg = ""
         for thread in self.threadConnection:
@@ -75,7 +75,7 @@ class P2PNetwork(Thread):
 if __name__ == '__main__':
     server = P2PNetwork()
     server.start()
-    server.checkPeers()
+    # server.checkPeers()
     time.sleep(11)
     # server.deleteRandomPeer()
     if input() == 'q':

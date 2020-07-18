@@ -1,7 +1,9 @@
 from threading import Thread, Timer
-import socket
+import socket, pickle
 import random
 import time
+
+from utils import generateRandomIndices
 import configs
 
 class Peer(Thread):
@@ -9,6 +11,7 @@ class Peer(Thread):
         Thread.__init__(self)
 
         self.peerAddress = peerAddress
+        self.oneDirNeighbours = []
         self.neighboursAddress = []
         self.requested = []
 
@@ -17,7 +20,6 @@ class Peer(Thread):
 
         self.sendThread = None
         self.rcvThread = None
-        self.findThread = None
 
         self.sock = None
 
@@ -25,54 +27,32 @@ class Peer(Thread):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.peerAddress)
 
-    def removeRequest(self, address): 
-        if address in self.requested:
-            self.requested.remove(address)
+    def findNewNeighbour(self):
+        notNeighbours = list(set(configs.allNodes).difference(self.neighboursAddress).difference([self.peerAddress]))
+        indices = generateRandomIndices(0, len(notNeighbours)-1, 1)
 
-    def request(self, address):   
-        if configs.NEIGHBOURS_NUM <= len(self.requested):
-            return False
-        Timer(configs.REMOVE_NEIGHBOUR_PERIOD, self.removeRequest, [address]).start()
-        self.requested.append(address)
-        self.lastSentTime[address] = time.time()
-        self.sock.sendto(self.createHelloPacket(address), address)
-
-    def report(self):
-        reminded = configs.NEIGHBOURS_NUM - len(self.neighboursAddress) 
-        return reminded
-
-    def findNeighbours(self):
-        self.findThread = Timer(configs.REMOVE_NEIGHBOUR_PERIOD, self.findNeighbours)
-        self.findThread.setName("FindThread")
-        self.findThread.start()
-
-        # newNeighbours = []
-        # for neighbour in self.neighboursAddress:
-        #     if self.lastRecievedTime.get(neighbour) is not None:
-        #         if time.time() - self.lastRecievedTime.get(neighbour) > configs.REMOVE_NEIGHBOUR_PERIOD:
-        #             continue
-        #     newNeighbours.append(neighbour)
-        # self.neighboursAddress = newNeighbours
-
-        reminded = configs.NEIGHBOURS_NUM - len(self.neighboursAddress) 
-        for i in range(reminded):
-            notNeighbours = list(set(configs.allNodes).difference(self.neighboursAddress).difference([self.peerAddress]))
-            randomPeer = random.randint(0, len(notNeighbours)-1)
-            self.request(notNeighbours[randomPeer])
+        self.requested.append(notNeighbours[indices[0]])
+        self.lastSentTime[notNeighbours[indices[0]]] = time.time()
+        return notNeighbours[indices[0]]
     
+    def sendOthers(self):
+        if configs.NEIGHBOURS_NUM <= len(self.neighboursAddress):
+            return
+
+        a = self.findNewNeighbour()
+        print(f"{self.peerAddress} has New Neighbour {a}")
+        for tempNeighbour in self.oneDirNeighbours + self.requested:
+            self.lastSentTime[tempNeighbour] = time.time()
+            self.sock.sendto(self.createHelloPacket(tempNeighbour) , tempNeighbour)
+
     def removeOldNeighbours(self):
         self.removeNeighbourThread = Timer(1, self.removeOldNeighbours)
         self.removeNeighbourThread.setName("RemoveNeighbourThread")
         self.removeNeighbourThread.start()
 
-        tempNeighbours = []
-        for neighbour in self.neighboursAddress:
-            if self.lastRecievedTime[neighbour] > configs.REMOVE_NEIGHBOUR_PERIOD:
-                continue
-            tempNeighbours.append(neighbour)
-        self.neighboursAddress = tempNeighbours
-
-
+        self.neighboursAddress = [neighbour for neighbour in self.neighboursAddress if (time.time()-self.lastRecievedTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
+        self.requested = [neighbour for neighbour in self.requested if (time.time()-self.lastSentTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
+        self.oneDirNeighbours = [neighbour for neighbour in self.oneDirNeighbours if (time.time()-self.lastRecievedTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
 
     def sendData(self):
         self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
@@ -82,42 +62,46 @@ class Peer(Thread):
         for neighbour in self.neighboursAddress:
             self.lastSentTime[neighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(neighbour) , neighbour)
+        self.sendOthers()
 
     def recieveData(self):
         while True:
-            msg = f"\nPeer {self.peerAddress}:\n"
+            msg = f"\nPeer {self.peerAddress}: {time.time()} \n"
             try:
                 data, addr = self.sock.recvfrom(1024)
                 
-                if random.randint(1, 100) <= configs.DROP_PERCENT:
-                    continue
+                # if random.randint(1, 100) <= configs.DROP_PERCENT:
+                #     continue
 
                 packet = self.decodeHelloPacket(data)
+                addr = packet['senderAddress']
 
-                if configs.NEIGHBOURS_NUM > len(self.neighboursAddress):
-                    if addr in self.requested:
-                        self.removeRequest(addr)
-                        self.neighboursAddress.append(addr)           
+                if (configs.NEIGHBOURS_NUM > len(self.neighboursAddress)) and (addr not in self.neighboursAddress):
+                    if (addr in self.requested):
+                        self.requested.remove(addr)
+                        self.neighboursAddress.append(addr)     
+                        msg += f"\tNewNighbour Hoooora: {addr}\n"  
+                    elif (self.peerAddress in packet['neighbours']):
+                        self.neighboursAddress.append(addr)     
+                        msg += f"\tNewNighbour Hoooora: {addr}\n"
                     elif self.peerAddress not in packet['neighbours']:
                         if configs.NEIGHBOURS_NUM > len(self.requested):
-                            self.request(addr)
+                            self.oneDirNeighbours.append(addr)
 
-                msg += "\tpacket " + str(packet['neighbours']) + " SndPeer " + str(data) + "\n"
+                msg += "\tpacket " + str(packet) + "\n"
                 msg += "\trequested " + str(self.requested) + "\n"
                 self.lastRecievedTime[addr] = time.time()
             except socket.timeout:
                 continue
 
             msg += "\tNEIGHBOURSLIST:   " + str(self.neighboursAddress) + "\n"
-            msg += "\tLASTRECIEVEDTIME:   " + str(self.lastRecievedTime)
-            # print(msg)
-
-
+            msg += "\tLASTRECIEVEDTIME:   " + str(self.lastRecievedTime) + "\n"
+            print(msg)
 
     def run(self):
-        self.createSocket()
+        self.creatSocket()
         time.sleep(1)
-        self.findNeighbours()
+        # self.findNeighbours()
 
         self.sendData()
         self.sock.settimeout(0.1)
@@ -125,6 +109,7 @@ class Peer(Thread):
         self.rcvThread = Thread(target=self.recieveData)
         self.rcvThread.setName("RcvThread")
         self.rcvThread.start()
+        self.removeOldNeighbours()
 
         # self.sock.closse()
 
@@ -134,9 +119,9 @@ class Peer(Thread):
 
     def createHelloPacket(self, neighbour):
         packetData = {
-            "senderId": "senderId",
+            "senderId": "",
             "senderAddress": self.peerAddress,
-            "packetType": "packetType",
+            "packetType": "Hello",
             "neighbours": self.neighboursAddress,
             "lastSentTime": self.lastSentTime.get(neighbour),
             "lastRecievedTime": self.lastRecievedTime.get(neighbour)
@@ -147,10 +132,9 @@ class Peer(Thread):
     def close(self):
         self.sendThread.cancel()
         self.rcvThread.cancel()
-        self.findThread.cancel()
+        self.removeNeighbourThread.cancel()
 
         # self.sendThread.join()
         # self.rcvThread.join()
-        # self.findThread.join()
 
         self.sock.close()

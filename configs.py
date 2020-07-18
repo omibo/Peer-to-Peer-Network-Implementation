@@ -1,5 +1,5 @@
-PEERS_NUM = 4
-NEIGHBOURS_NUM = 1
+PEERS_NUM = 6
+NEIGHBOURS_NUM = 3
 
 SEND_PACKET_PERIOD = 2.0
 REMOVE_NEIGHBOUR_PERIOD = 8.0
@@ -9,7 +9,7 @@ SELECT_PEER_FOR_SILENT = 10
 
 DROP_PERCENT = 5
 
-startPort = 10001
+startPort = 10029
 
 allNodes = [("127.0.0.1", startPort+1), ("127.0.0.1", startPort+2), ("127.0.0.1", startPort+3), 
                 ("127.0.0.1", startPort+4), ("127.0.0.1", startPort+5), ("127.0.0.1", startPort+6)]
