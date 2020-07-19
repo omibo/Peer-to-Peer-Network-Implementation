@@ -17,33 +17,31 @@ class P2PNetwork(Thread):
         self.availableNodes = configs.allNodes
         self.checkTimer = None
 
-    def deleteRandomPeer(self):
-        Timer(configs.SELECT_PEER_FOR_SILENT, self.deleteRandomPeer).start()
-        peerNum = random.randint(0, len(self.availableNodes)-1)
-        print("\nDELETE: " + str(self.availableNodes[peerNum][1]) + " TIME: ", time.time())
-        self.closePeer(self.threadConnection[peerNum])
-        del self.threadConnection[peerNum]
-        Timer(configs.PEER_SILENT_PERIOD, self.createPeer, [self.availableNodes[peerNum][0], self.availableNodes[peerNum][1]]).start()
-        del self.availableNodes[peerNum]
+    def silentPeer(self):
+        self.silentPeerThread = Timer(configs.SELECT_PEER_FOR_SILENT, self.silentPeer)
+        self.silentPeerThread.start()
+        peerNum = None
 
-    def createPeer(self, IP, port):
-        print("\nCREATE: " + str(port) + " TIME: ", time.time())
-        self.availableNodes.append((IP, port))
-        self.runThread((IP, port))
+        while True:
+            peerNum = random.randint(0, len(self.availableNodes)-1)
+            if self.threadConnection[peerNum].peerIsOnline:
+                break
 
-    def runThread(self, address):
-        peerThread = Peer(address)
-        self.threadConnection.append(peerThread)
-        peerThread.start()
+        print("\nDELETE: " + str(self.availableNodes[peerNum][1]) + " TIME: ", time.time()%60)
+        self.threadConnection[peerNum].silentPeer()
+        self.restartThread = Timer(configs.PEER_SILENT_PERIOD + 0.0001, self.restartPeer, [peerNum])
+        self.restartThread.start()
+
+    def restartPeer(self, peerNum):
+        print("\nCREATE: " + str(self.threadConnection[peerNum].peerAddress[1]) + " TIME: ", time.time()%60)
+        self.threadConnection[peerNum].restartPeer()
 
     def run(self):
         self.startTime = time.time()
         for i in range(configs.PEERS_NUM):
-            self.runThread((configs.allNodes[i]))
-
-    def closePeer(self, thread):
-        thread.close()
-        thread.join()
+            peerThread = Peer(configs.allNodes[i])
+            self.threadConnection.append(peerThread)
+            peerThread.start()
 
     def close(self):
         print('Closing server and clients connections..')
@@ -83,10 +81,13 @@ class P2PNetwork(Thread):
 if __name__ == '__main__':
     server = P2PNetwork()
     server.start()
+    time.sleep(1)
     server.checkPeers()
-    time.sleep(11)
-    # server.deleteRandomPeer()
+    time.sleep(9)
+    server.silentPeer()
     if input() == 'q':
         print("Exiting..")
+        server.silentPeerThread.cancel()
+        server.restartThread.cancel()
         server.close()
         server.join()

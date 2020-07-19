@@ -13,6 +13,7 @@ class Peer(Thread):
         Thread.__init__(self)
 
         self.peerAddress = peerAddress
+
         self.oneDirNeighbours = []
         self.neighboursAddress = []
         self.requested = []
@@ -20,8 +21,7 @@ class Peer(Thread):
         self.lastSentTime = dict()
         self.lastRecievedTime = dict()
 
-        self.sendThread = None
-        self.rcvThread = None
+        self.peerIsOnline = False
 
         self.sock = None
 
@@ -96,15 +96,23 @@ class Peer(Thread):
 
         if (configs.NEIGHBOURS_NUM > len(self.neighboursAddress)) and (addr not in self.neighboursAddress):
             if addr in self.requested:
+                
+                try:
+                    self.oneDirNeighbours.remove(addr)
+                except ValueError:
+                    pass
+
                 self.requested.remove(addr)
                 self.neighboursAddress.append(addr)
                 msg += f"\tNewNighbour Hoooora: {addr}\n"
             elif self.peerAddress in packet['neighbours']:
                 self.neighboursAddress.append(addr)
+                
                 try:
                     self.oneDirNeighbours.remove(addr)
                 except ValueError:
                     pass
+                
                 msg += f"\tNewNighbour Hoooora: {addr}\n"
             elif self.peerAddress not in packet['neighbours']:
                 if configs.NEIGHBOURS_NUM > len(self.requested):
@@ -114,7 +122,7 @@ class Peer(Thread):
 
     def run(self):
         self.creatSocket()
-        time.sleep(1)
+        self.peerIsOnline = True
         # self.findNeighbours()
 
         self.sendData()
@@ -143,7 +151,19 @@ class Peer(Thread):
         packetData = pickle.dumps(packetData)
         return packetData
 
+    def silentPeer(self):
+        self.peerIsOnline = False
+        self.close()
+    
+    def restartPeer(self):
+        self.run()
+
     def close(self):
+
+        self.neighboursAddress.clear()
+        self.oneDirNeighbours.clear()
+        self.requested.clear()
+
         self.sendThread.cancel()
         self.rcvThread.stop()
         self.removeNeighbourThread.cancel()
