@@ -51,6 +51,8 @@ class P2PNetwork(Thread):
         for thread in self.threadConnection:
             self.threadConnection.remove(thread)
         self.checkTimer.cancel()
+        # self.silentPeerThread.cancel()
+        # server.restartThread.cancel()
 
     def checkPeers(self):
         self.checkTimer = Timer(2, self.checkPeers)
@@ -84,10 +86,8 @@ if __name__ == '__main__':
     time.sleep(1)
     server.checkPeers()
     time.sleep(9)
-    server.silentPeer()
+    # server.silentPeer()
     if input() == 'q':
         print("Exiting..")
-        server.silentPeerThread.cancel()
-        server.restartThread.cancel()
         server.close()
         server.join()

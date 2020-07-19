@@ -8,6 +8,8 @@ import configs
 
 from stoppableThread import StoppableThread
 
+import json
+
 class Peer(Thread):
     def __init__(self, peerAddress):
         Thread.__init__(self)
@@ -24,6 +26,10 @@ class Peer(Thread):
         self.peerIsOnline = False
 
         self.sock = None
+
+        self.recievedPacketsNum = dict()
+        self.sentPacketsNum = dict()
+        self.allTimeNeighbours = set()
 
     def creatSocket(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -48,6 +54,10 @@ class Peer(Thread):
         for tempNeighbour in self.oneDirNeighbours + self.requested:
             self.lastSentTime[tempNeighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(tempNeighbour) , tempNeighbour)
+            if tempNeighbour in self.sentPacketsNum:
+                self.sentPacketsNum[tempNeighbour] += 1
+            else:
+                self.sentPacketsNum[tempNeighbour] = 0
 
     def removeOldNeighbours(self):
         self.removeNeighbourThread = Timer(1, self.removeOldNeighbours)
@@ -66,6 +76,10 @@ class Peer(Thread):
         for neighbour in self.neighboursAddress:
             self.lastSentTime[neighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(neighbour) , neighbour)
+            if neighbour in self.sentPacketsNum:
+                    self.sentPacketsNum[neighbour] += 1
+            else:
+                self.sentPacketsNum[neighbour] = 0
         self.sendOthers()
 
     def recieveData(self):
@@ -83,6 +97,10 @@ class Peer(Thread):
                 msg += "\tpacket " + str(packet) + "\n"
                 msg += "\trequested " + str(self.requested) + "\n"
                 self.lastRecievedTime[addr] = time.time()
+                if addr in self.recievedPacketsNum:
+                    self.recievedPacketsNum[addr] += 1
+                else:
+                    self.recievedPacketsNum[addr] = 0
             except socket.timeout:
                 continue
 
@@ -96,27 +114,30 @@ class Peer(Thread):
 
         if (configs.NEIGHBOURS_NUM > len(self.neighboursAddress)) and (addr not in self.neighboursAddress):
             if addr in self.requested:
-                
+
                 try:
                     self.oneDirNeighbours.remove(addr)
                 except ValueError:
                     pass
 
                 self.requested.remove(addr)
+                self.allTimeNeighbours.add(addr)
                 self.neighboursAddress.append(addr)
                 msg += f"\tNewNighbour Hoooora: {addr}\n"
             elif self.peerAddress in packet['neighbours']:
                 self.neighboursAddress.append(addr)
-                
+                self.allTimeNeighbours.add(addr)
+
                 try:
                     self.oneDirNeighbours.remove(addr)
                 except ValueError:
                     pass
-                
+
                 msg += f"\tNewNighbour Hoooora: {addr}\n"
             elif self.peerAddress not in packet['neighbours']:
                 if configs.NEIGHBOURS_NUM > len(self.requested):
                     if addr not in self.oneDirNeighbours:
+                        # self.allTimeNeighbours.add(addr)
                         self.oneDirNeighbours.append(addr)
         return msg
 
@@ -154,12 +175,20 @@ class Peer(Thread):
     def silentPeer(self):
         self.peerIsOnline = False
         self.close()
-    
+
     def restartPeer(self):
         self.run()
 
-    def close(self):
+    def writeJSON(self):
+        filename = "./json/" + str(self.peerAddress[1]) + ".json"
+        allTimeNeighboursData = [{"peerIP": k[0], "peerPort": k[1], "sentPackets": self.sentPacketsNum[k], "receivedPackets": self.recievedPacketsNum[k]} for k in self.allTimeNeighbours]
+        currentNeighboursData = [{"peerIP": k[0], "peerPort": k[1]} for k in self.neighboursAddress]
+        data = {"allTimeNeighbours": allTimeNeighboursData, "currentNeighbours": currentNeighboursData}
+        with open(filename, 'w+') as outfile:
+            json.dump(data, outfile, indent=2)
 
+    def close(self):
+        self.writeJSON()
         self.neighboursAddress.clear()
         self.oneDirNeighbours.clear()
         self.requested.clear()
