@@ -30,6 +30,7 @@ class Peer(Thread):
         self.recievedPacketsNum = dict()
         self.sentPacketsNum = dict()
         self.allTimeNeighbours = set()
+        self.topology = dict()
 
     def creatSocket(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -106,7 +107,7 @@ class Peer(Thread):
 
             msg += "\tNEIGHBOURSLIST:   " + str(self.neighboursAddress) + "\n"
             msg += "\tLASTRECIEVEDTIME:   " + str(self.lastRecievedTime) + "\n"
-            # print(msg)
+            self.topology[addr] = packet['neighbours']
 
     def handlePacketState(self, packet):
         msg = ""
@@ -183,7 +184,8 @@ class Peer(Thread):
         filename = "./json/" + str(self.peerAddress[1]) + ".json"
         allTimeNeighboursData = [{"peerIP": k[0], "peerPort": k[1], "sentPackets": self.sentPacketsNum[k], "receivedPackets": self.recievedPacketsNum[k]} for k in self.allTimeNeighbours]
         currentNeighboursData = [{"peerIP": k[0], "peerPort": k[1]} for k in self.neighboursAddress]
-        data = {"allTimeNeighbours": allTimeNeighboursData, "currentNeighbours": currentNeighboursData}
+        topologyData = [{"peerIP": k[0], "peerPort": k[1], "neighbours": [{"peerIP": n[0], "peerPort": n[1]} for n in self.topology[k]]} for k in self.neighboursAddress]
+        data = {"allTimeNeighbours": allTimeNeighboursData, "currentNeighbours": currentNeighboursData, "topology": topologyData}
         with open(filename, 'w+') as outfile:
             json.dump(data, outfile, indent=2)
 
