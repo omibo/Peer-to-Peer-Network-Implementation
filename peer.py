@@ -31,7 +31,9 @@ class Peer(Thread):
         notNeighbours = list(set(configs.allNodes).difference(self.neighboursAddress).difference([self.peerAddress]))
         indices = generateRandomIndices(0, len(notNeighbours)-1, 1)
 
-        self.requested.append(notNeighbours[indices[0]])
+        if notNeighbours[indices[0]] not in self.requested:
+            self.requested.append(notNeighbours[indices[0]])
+
         self.lastSentTime[notNeighbours[indices[0]]] = time.time()
         return notNeighbours[indices[0]]
     
@@ -40,7 +42,7 @@ class Peer(Thread):
             return
 
         a = self.findNewNeighbour()
-        print(f"{self.peerAddress} has New Neighbour {a}")
+        print(f"{self.peerAddress} has New Requested {a} Time: {time.time() % 60}")
         for tempNeighbour in self.oneDirNeighbours + self.requested:
             self.lastSentTime[tempNeighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(tempNeighbour) , tempNeighbour)
@@ -74,19 +76,7 @@ class Peer(Thread):
                 #     continue
 
                 packet = self.decodeHelloPacket(data)
-                addr = packet['senderAddress']
-
-                if (configs.NEIGHBOURS_NUM > len(self.neighboursAddress)) and (addr not in self.neighboursAddress):
-                    if (addr in self.requested):
-                        self.requested.remove(addr)
-                        self.neighboursAddress.append(addr)     
-                        msg += f"\tNewNighbour Hoooora: {addr}\n"  
-                    elif (self.peerAddress in packet['neighbours']):
-                        self.neighboursAddress.append(addr)     
-                        msg += f"\tNewNighbour Hoooora: {addr}\n"
-                    elif self.peerAddress not in packet['neighbours']:
-                        if configs.NEIGHBOURS_NUM > len(self.requested):
-                            self.oneDirNeighbours.append(addr)
+                msg += self.handlePacketState(packet)
 
                 msg += "\tpacket " + str(packet) + "\n"
                 msg += "\trequested " + str(self.requested) + "\n"
@@ -96,7 +86,29 @@ class Peer(Thread):
 
             msg += "\tNEIGHBOURSLIST:   " + str(self.neighboursAddress) + "\n"
             msg += "\tLASTRECIEVEDTIME:   " + str(self.lastRecievedTime) + "\n"
-            print(msg)
+            # print(msg)
+
+    def handlePacketState(self, packet):
+        msg = ""
+        addr = packet['senderAddress']
+
+        if (configs.NEIGHBOURS_NUM > len(self.neighboursAddress)) and (addr not in self.neighboursAddress):
+            if addr in self.requested:
+                self.requested.remove(addr)
+                self.neighboursAddress.append(addr)     
+                msg += f"\tNewNighbour Hoooora: {addr}\n"  
+            elif self.peerAddress in packet['neighbours']:
+                self.neighboursAddress.append(addr)     
+                try:
+                    self.oneDirNeighbours.remove(addr)
+                except ValueError:
+                    pass
+                msg += f"\tNewNighbour Hoooora: {addr}\n"
+            elif self.peerAddress not in packet['neighbours']:
+                if configs.NEIGHBOURS_NUM > len(self.requested):
+                    if addr not in self.oneDirNeighbours:
+                        self.oneDirNeighbours.append(addr)
+        return msg
 
     def run(self):
         self.creatSocket()
