@@ -15,7 +15,8 @@ class P2PNetwork(Thread):
         Thread.__init__(self)
         self.threadConnection = []
         self.availableNodes = configs.allNodes
-            
+        self.checkTimer = None
+
     def deleteRandomPeer(self):
         Timer(configs.SELECT_PEER_FOR_SILENT, self.deleteRandomPeer).start()
         peerNum = random.randint(0, len(self.availableNodes)-1)
@@ -27,7 +28,7 @@ class P2PNetwork(Thread):
 
     def createPeer(self, IP, port):
         print("\nCREATE: " + str(port) + " TIME: ", time.time())
-        self.availableNodes.append(address)
+        self.availableNodes.append((IP, port))
         self.runThread((IP, port))
 
     def runThread(self, address):
@@ -45,13 +46,17 @@ class P2PNetwork(Thread):
         thread.join()
 
     def close(self):
-        print('Close server and all clients connection')
+        print('Closing server and clients connections..')
         for thread in self.threadConnection:
             thread.close()
             thread.join()
+        for thread in self.threadConnection:
+            self.threadConnection.remove(thread)
+        self.checkTimer.cancel()
 
     def checkPeers(self):
-        Timer(2, self.checkPeers).start()
+        self.checkTimer = Timer(2, self.checkPeers)
+        self.checkTimer.start()
         notCompleted = configs.PEERS_NUM
         msg = ""
         for thread in self.threadConnection:
@@ -82,6 +87,6 @@ if __name__ == '__main__':
     time.sleep(11)
     # server.deleteRandomPeer()
     if input() == 'q':
-        print("IIIIIIII")
+        print("Exiting..")
         server.close()
         server.join()

@@ -6,6 +6,8 @@ import time
 from utils import generateRandomIndices
 import configs
 
+from stoppableThread import StoppableThread
+
 class Peer(Thread):
     def __init__(self, peerAddress):
         Thread.__init__(self)
@@ -36,7 +38,7 @@ class Peer(Thread):
 
         self.lastSentTime[notNeighbours[indices[0]]] = time.time()
         return notNeighbours[indices[0]]
-    
+
     def sendOthers(self):
         if configs.NEIGHBOURS_NUM <= len(self.neighboursAddress):
             return
@@ -71,7 +73,7 @@ class Peer(Thread):
             msg = f"\nPeer {self.peerAddress}: {time.time()} \n"
             try:
                 data, addr = self.sock.recvfrom(1024)
-                
+
                 # if random.randint(1, 100) <= configs.DROP_PERCENT:
                 #     continue
 
@@ -95,10 +97,10 @@ class Peer(Thread):
         if (configs.NEIGHBOURS_NUM > len(self.neighboursAddress)) and (addr not in self.neighboursAddress):
             if addr in self.requested:
                 self.requested.remove(addr)
-                self.neighboursAddress.append(addr)     
-                msg += f"\tNewNighbour Hoooora: {addr}\n"  
+                self.neighboursAddress.append(addr)
+                msg += f"\tNewNighbour Hoooora: {addr}\n"
             elif self.peerAddress in packet['neighbours']:
-                self.neighboursAddress.append(addr)     
+                self.neighboursAddress.append(addr)
                 try:
                     self.oneDirNeighbours.remove(addr)
                 except ValueError:
@@ -117,8 +119,8 @@ class Peer(Thread):
 
         self.sendData()
         self.sock.settimeout(0.1)
-        
-        self.rcvThread = Thread(target=self.recieveData)
+
+        self.rcvThread = StoppableThread(target=self.recieveData)
         self.rcvThread.setName("RcvThread")
         self.rcvThread.start()
         self.removeOldNeighbours()
@@ -143,7 +145,7 @@ class Peer(Thread):
 
     def close(self):
         self.sendThread.cancel()
-        self.rcvThread.cancel()
+        self.rcvThread.stop()
         self.removeNeighbourThread.cancel()
 
         # self.sendThread.join()
