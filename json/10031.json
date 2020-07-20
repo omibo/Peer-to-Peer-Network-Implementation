@@ -3,32 +3,26 @@
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10033,
-      "sentPackets": 30,
-      "receivedPackets": 31
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10035,
-      "sentPackets": 26,
-      "receivedPackets": 12
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10032,
-      "sentPackets": 24,
-      "receivedPackets": 17
+      "sentPackets": 6,
+      "receivedPackets": 5
     },
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10034,
-      "sentPackets": 19,
-      "receivedPackets": 13
+      "sentPackets": 7,
+      "receivedPackets": 6
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10032,
+      "sentPackets": 5,
+      "receivedPackets": 5
     }
   ],
   "currentNeighbours": [
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10033
+      "peerPort": 10034
     },
     {
       "peerIP": "127.0.0.1",
@@ -36,13 +30,13 @@
     },
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10035
+      "peerPort": 10033
     }
   ],
   "topology": [
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10033,
+      "peerPort": 10034,
       "neighbours": [
         {
           "peerIP": "127.0.0.1",
@@ -54,7 +48,7 @@
         },
         {
           "peerIP": "127.0.0.1",
-          "peerPort": 10035
+          "peerPort": 10033
         }
       ]
     },
@@ -64,29 +58,33 @@
       "neighbours": [
         {
           "peerIP": "127.0.0.1",
+          "peerPort": 10035
+        },
+        {
+          "peerIP": "127.0.0.1",
           "peerPort": 10033
         },
         {
           "peerIP": "127.0.0.1",
           "peerPort": 10031
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10034
         }
       ]
     },
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10035,
+      "peerPort": 10033,
       "neighbours": [
         {
           "peerIP": "127.0.0.1",
-          "peerPort": 10033
+          "peerPort": 10032
         },
         {
           "peerIP": "127.0.0.1",
           "peerPort": 10031
+        },
+        {
+          "peerIP": "127.0.0.1",
+          "peerPort": 10030
         }
       ]
     }

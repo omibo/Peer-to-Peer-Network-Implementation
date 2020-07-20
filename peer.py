@@ -21,13 +21,13 @@ class Peer(Thread):
         self.requested = []
 
         self.lastSentTime = dict()
-        self.lastRecievedTime = dict()
+        self.lastreceivedTime = dict()
 
         self.peerIsOnline = False
 
         self.sock = None
 
-        self.recievedPacketsNum = dict()
+        self.receivedPacketsNum = dict()
         self.sentPacketsNum = dict()
         self.allTimeNeighbours = set()
         self.neighboursAvailabilty = dict()
@@ -56,10 +56,9 @@ class Peer(Thread):
         for tempNeighbour in self.oneDirNeighbours + self.requested:
             self.lastSentTime[tempNeighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(tempNeighbour) , tempNeighbour)
-            if tempNeighbour in self.sentPacketsNum:
-                self.sentPacketsNum[tempNeighbour] += 1
-            else:
+            if tempNeighbour not in self.sentPacketsNum:
                 self.sentPacketsNum[tempNeighbour] = 0
+            self.sentPacketsNum[tempNeighbour] += 1
 
     def removeOldNeighbours(self):
         self.removeNeighbourThread = Timer(1, self.removeOldNeighbours)
@@ -69,15 +68,15 @@ class Peer(Thread):
         neighboursList = list()
         for neighbour in self.neighboursAddress:
             t = time.time()
-            if t - self.lastRecievedTime[neighbour] > 8:
+            if t - self.lastreceivedTime[neighbour] > 8:
                 self.neighboursAvailabilty[neighbour][-1][1] = t
             else:
                 neighboursList.append(neighbour)
-        
+
         self.neighboursAddress = neighboursList
 
         self.requested = [neighbour for neighbour in self.requested if (time.time()-self.lastSentTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
-        self.oneDirNeighbours = [neighbour for neighbour in self.oneDirNeighbours if (time.time()-self.lastRecievedTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
+        self.oneDirNeighbours = [neighbour for neighbour in self.oneDirNeighbours if (time.time()-self.lastreceivedTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
 
     def sendData(self):
         self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
@@ -93,7 +92,7 @@ class Peer(Thread):
                 self.sentPacketsNum[neighbour] = 0
         self.sendOthers()
 
-    def recieveData(self):
+    def receiveData(self):
         while True:
             msg = f"\nPeer {self.peerAddress}: {time.time()} \n"
             try:
@@ -107,16 +106,15 @@ class Peer(Thread):
 
                 msg += "\tpacket " + str(packet) + "\n"
                 msg += "\trequested " + str(self.requested) + "\n"
-                self.lastRecievedTime[addr] = time.time()
-                if addr in self.recievedPacketsNum:
-                    self.recievedPacketsNum[addr] += 1
-                else:
-                    self.recievedPacketsNum[addr] = 0
+                self.lastreceivedTime[addr] = time.time()
+                if addr not in self.receivedPacketsNum:
+                    self.receivedPacketsNum[addr] = 0
+                self.receivedPacketsNum[addr] += 1
             except socket.timeout:
                 continue
 
             msg += "\tNEIGHBOURSLIST:   " + str(self.neighboursAddress) + "\n"
-            msg += "\tLASTRECIEVEDTIME:   " + str(self.lastRecievedTime) + "\n"
+            msg += "\tLASTreceiveDTIME:   " + str(self.lastreceivedTime) + "\n"
             self.topology[addr] = packet['neighbours']
 
     def handlePacketState(self, packet):
@@ -172,7 +170,7 @@ class Peer(Thread):
         self.sendData()
         self.sock.settimeout(0.1)
 
-        self.rcvThread = StoppableThread(target=self.recieveData)
+        self.rcvThread = StoppableThread(target=self.receiveData)
         self.rcvThread.setName("RcvThread")
         self.rcvThread.start()
         self.removeOldNeighbours()
@@ -190,7 +188,7 @@ class Peer(Thread):
             "packetType": "Hello",
             "neighbours": self.neighboursAddress,
             "lastSentTime": self.lastSentTime.get(neighbour),
-            "lastRecievedTime": self.lastRecievedTime.get(neighbour)
+            "lastreceivedTime": self.lastreceivedTime.get(neighbour)
         }
         packetData = pickle.dumps(packetData)
         return packetData
@@ -206,7 +204,7 @@ class Peer(Thread):
 
     def writeJSON(self):
         filename = "./json/" + str(self.peerAddress[1]) + ".json"
-        allTimeNeighboursData = [{"peerIP": k[0], "peerPort": k[1], "sentPackets": self.sentPacketsNum[k], "receivedPackets": self.recievedPacketsNum[k]} for k in self.allTimeNeighbours]
+        allTimeNeighboursData = [{"peerIP": k[0], "peerPort": k[1], "sentPackets": self.sentPacketsNum[k], "receivedPackets": self.receivedPacketsNum[k]} for k in self.allTimeNeighbours]
         currentNeighboursData = [{"peerIP": k[0], "peerPort": k[1]} for k in self.neighboursAddress]
         topologyData = [{"peerIP": k[0], "peerPort": k[1], "neighbours": [{"peerIP": n[0], "peerPort": n[1]} for n in self.topology[k]]} for k in self.neighboursAddress]
         data = {"allTimeNeighbours": allTimeNeighboursData, "currentNeighbours": currentNeighboursData, "topology": topologyData}
