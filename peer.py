@@ -186,17 +186,19 @@ class Peer(Thread):
         # self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
         # self.sendThread.setName("SendThread")
         # self.sendThread.start()
-        self.sendThread = Thread(target=self.sendData, name="SendThread")
+        self.sendThread = StoppableThread(target=self.sendData, name="SendThread")
+        time.sleep(0.05)
         self.sendThread.start()
 
 
         # self.sendData()
-        # self.sock.settimeout(0.1)
+        self.sock.settimeout(0.1)
 
-        self.rcvThread = Thread(target=self.recieveData, name="RcvThread")
+        self.rcvThread = StoppableThread(target=self.recieveData, name="RcvThread")
+        time.sleep(0.05)
         self.rcvThread.start()
 
-        self.removeNeighbourThread = Thread(target=self.removeOldNeighbours(), name="removeNeighbourThread")
+        self.removeNeighbourThread = StoppableThread(target=self.removeOldNeighbours, name="removeNeighbourThread")
         self.removeNeighbourThread.start()
 
         # self.removeOldNeighbours()
@@ -228,11 +230,13 @@ class Peer(Thread):
         self.peerIsOnline = False
         for neighbour in self.neighboursAddress:
             self.neighboursAvailabilty[neighbour][-1][1] = time.time()
-        # self.close()
+
+        self.neighboursAddress.clear()
+        self.oneDirNeighbours.clear()
+        self.requested.clear()
 
     def restartPeer(self):
         self.peerIsOnline = True
-        # self.run()
 
     def writeJSON(self):
         filename = "./json/" + str(self.peerAddress[1]) + ".json"
@@ -240,28 +244,38 @@ class Peer(Thread):
         currentNeighboursData = [{"peerIP": k[0], "peerPort": k[1]} for k in self.neighboursAddress]
         topologyData = [{"peerIP": k[0], "peerPort": k[1], "neighbours": [{"peerIP": n[0], "peerPort": n[1]} for n in self.topology[k]]} for k in self.neighboursAddress]
         data = {"allTimeNeighbours": allTimeNeighboursData, "currentNeighbours": currentNeighboursData, "topology": topologyData}
-        print(f"{self.peerAddress} ::: ")
-        print(self.neighboursAvailabilty)
+        print(f"**************************** {self.peerAddress} {self.calculateAvailibility()}  *****************************************")
         with open(filename, 'w+') as outfile:
             json.dump(data, outfile, indent=2)
 
-    def close(self):
-        self.writeJSON()
-        self.neighboursAddress.clear()
-        self.oneDirNeighbours.clear()
-        self.requested.clear()
+    def calculateAvailibility(self):
+        finalAvailablity = dict()
+        print(f"{self.peerAddress} \n {self.neighboursAvailabilty}")
+        for neighbour in self.neighboursAvailabilty:
+            sum = 0
+            for t in self.neighboursAvailabilty[neighbour]:
+                sum += t[1] - t[0]
+            finalAvailablity[neighbour] = sum
+        return finalAvailablity
 
-        self.sendThread.stop()
+
+    def close(self):
+        
+        self.silentPeer()
+
+        self.writeJSON()
+
         self.rcvThread.stop()
+        self.sendThread.stop()
         self.removeNeighbourThread.stop()
 
-        # self.sendThread.join()
-        # self.rcvThread.join()
+        self.sendThread.join()
+        self.rcvThread.join()
 
-        while self.sendThread.is_alive():
-            self.sendThread.join()
+        # while self.sendThread.is_alive():
+        #     self.sendThread.join()
 
-        while self.rcvThread.is_alive():
-            self.rcvThread.join()
+        # while self.rcvThread.is_alive():
+        #     self.rcvThread.join()
 
         self.sock.close()

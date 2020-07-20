@@ -44,15 +44,15 @@ class P2PNetwork(Thread):
             peerThread.start()
 
     def close(self):
+        self.checkTimer.cancel()
+        self.silentPeerThread.cancel()
+        server.restartThread.cancel()
         print('Closing server and clients connections..')
         for thread in self.threadConnection:
             thread.close()
             thread.join()
         for thread in self.threadConnection:
             self.threadConnection.remove(thread)
-        self.checkTimer.cancel()
-        self.silentPeerThread.cancel()
-        server.restartThread.cancel()
 
     def checkPeers(self):
         self.checkTimer = Timer(2, self.checkPeers)
@@ -72,13 +72,6 @@ class P2PNetwork(Thread):
                 msg += f" {n[1]}"
             msg += " } \t Time: " + str(time.time() % 60)
         print(msg + "\n")
-        # for thread in self.threadConnection:
-        #     print(thread.peerAddress ,thread.report())
-        #     if thread.report() == 0:
-        #         notCompleted -= 1
-        # if notCompleted == 0:
-        #     print(time.time() - self.startTime)
-        #     self.close()
 
 if __name__ == '__main__':
     server = P2PNetwork()
