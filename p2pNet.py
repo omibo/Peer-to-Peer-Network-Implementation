@@ -17,9 +17,11 @@ class P2PNetwork(Thread):
         self.availableNodes = configs.allNodes
         self.checkTimer = None
 
-    def silentPeer(self):
+    def initSilentPeer(self):
         self.silentPeerThread = Timer(configs.SELECT_PEER_FOR_SILENT, self.silentPeer)
         self.silentPeerThread.start()
+
+    def silentPeer(self):
         peerNum = None
 
         while True:
@@ -35,6 +37,7 @@ class P2PNetwork(Thread):
     def restartPeer(self, peerNum):
         print("\nCREATE: " + str(self.threadConnection[peerNum].peerAddress[1]) + " TIME: ", time.time()%60)
         self.threadConnection[peerNum].restartPeer()
+        self.restartThread.cancel()
 
     def run(self):
         self.startTime = time.time()
@@ -86,7 +89,7 @@ if __name__ == '__main__':
     time.sleep(1)
     server.checkPeers()
     time.sleep(9)
-    server.silentPeer()
+    server.initSilentPeer()
 
     if input() == 'q':
         print("Exiting..")
