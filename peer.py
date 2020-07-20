@@ -197,6 +197,7 @@ class Peer(Thread):
         self.rcvThread.start()
 
         self.removeNeighbourThread = Thread(target=self.removeOldNeighbours(), name="removeNeighbourThread")
+        self.removeNeighbourThread.start()
 
         # self.removeOldNeighbours()
 
