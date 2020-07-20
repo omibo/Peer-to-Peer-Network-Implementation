@@ -30,6 +30,7 @@ class Peer(Thread):
         self.recievedPacketsNum = dict()
         self.sentPacketsNum = dict()
         self.allTimeNeighbours = set()
+        self.neighboursAvailabilty = dict()
         self.topology = dict()
 
     def creatSocket(self):
@@ -65,7 +66,16 @@ class Peer(Thread):
         self.removeNeighbourThread.setName("RemoveNeighbourThread")
         self.removeNeighbourThread.start()
 
-        self.neighboursAddress = [neighbour for neighbour in self.neighboursAddress if (time.time()-self.lastRecievedTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
+        neighboursList = list()
+        for neighbour in self.neighboursAddress:
+            t = time.time()
+            if t - self.lastRecievedTime[neighbour] > 8:
+                self.neighboursAvailabilty[neighbour][-1][1] = t
+            else:
+                neighboursList.append(neighbour)
+        
+        self.neighboursAddress = neighboursList
+
         self.requested = [neighbour for neighbour in self.requested if (time.time()-self.lastSentTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
         self.oneDirNeighbours = [neighbour for neighbour in self.oneDirNeighbours if (time.time()-self.lastRecievedTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
 
@@ -124,9 +134,21 @@ class Peer(Thread):
                 self.requested.remove(addr)
                 self.allTimeNeighbours.add(addr)
                 self.neighboursAddress.append(addr)
+
+                try:
+                    self.neighboursAvailabilty[addr].append([time.time(), -1])
+                except:
+                    self.neighboursAvailabilty[addr] = [[time.time(), -1]]
+
                 msg += f"\tNewNighbour Hoooora: {addr}\n"
             elif self.peerAddress in packet['neighbours']:
                 self.neighboursAddress.append(addr)
+
+                try:
+                    self.neighboursAvailabilty[addr].append([time.time(), -1])
+                except:
+                    self.neighboursAvailabilty[addr] = [[time.time(), -1]]
+
                 self.allTimeNeighbours.add(addr)
 
                 try:
@@ -175,6 +197,8 @@ class Peer(Thread):
 
     def silentPeer(self):
         self.peerIsOnline = False
+        for neighbour in self.neighboursAddress:
+            self.neighboursAvailabilty[neighbour][-1][1] = time.time()
         self.close()
 
     def restartPeer(self):
@@ -186,6 +210,8 @@ class Peer(Thread):
         currentNeighboursData = [{"peerIP": k[0], "peerPort": k[1]} for k in self.neighboursAddress]
         topologyData = [{"peerIP": k[0], "peerPort": k[1], "neighbours": [{"peerIP": n[0], "peerPort": n[1]} for n in self.topology[k]]} for k in self.neighboursAddress]
         data = {"allTimeNeighbours": allTimeNeighboursData, "currentNeighbours": currentNeighboursData, "topology": topologyData}
+        print(f"{self.peerAddress} ::: ")
+        print(self.neighboursAvailabilty)
         with open(filename, 'w+') as outfile:
             json.dump(data, outfile, indent=2)
 

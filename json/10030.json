@@ -1,5 +1,30 @@
 {
-  "allTimeNeighbours": [],
+  "allTimeNeighbours": [
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10033,
+      "sentPackets": 13,
+      "receivedPackets": 13
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10035,
+      "sentPackets": 12,
+      "receivedPackets": 8
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10032,
+      "sentPackets": 9,
+      "receivedPackets": 6
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10031,
+      "sentPackets": 1,
+      "receivedPackets": 6
+    }
+  ],
   "currentNeighbours": [],
   "topology": []
 }
