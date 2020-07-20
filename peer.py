@@ -94,7 +94,7 @@ class Peer(Thread):
             self.lastSentTime[neighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(neighbour) , neighbour)
             if neighbour in self.sentPacketsNum:
-                self.sentPacketsNum[neighbour] += 1
+                    self.sentPacketsNum[neighbour] += 1
             else:
                 self.sentPacketsNum[neighbour] = 1
         self.sendOthers()
@@ -119,10 +119,6 @@ class Peer(Thread):
                 else:
                     self.recievedPacketsNum[addr] = 1
             except socket.timeout:
-                continue
-            except OSError:
-                print(self.sock._closed)
-                time.sleep(0.1)
                 continue
 
             msg += "\tNEIGHBOURSLIST:   " + str(self.neighboursAddress) + "\n"
@@ -238,7 +234,4 @@ class Peer(Thread):
         # self.sendThread.join()
         # self.rcvThread.join()
 
-        while self.rcvThread.is_alive() or self.sendThread.is_alive() or self.removeNeighbourThread.is_alive():
-            time.sleep(0.5)
-            print(f"\nClosing {self.peerAddress} {(self.rcvThread.is_alive(), self.sendThread.is_alive(), self.removeNeighbourThread.is_alive())}\n")
         self.sock.close()

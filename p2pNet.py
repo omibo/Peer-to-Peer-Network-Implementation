@@ -84,7 +84,7 @@ if __name__ == '__main__':
     server = P2PNetwork()
     server.start()
     time.sleep(1)
-    # server.checkPeers()
+    server.checkPeers()
     time.sleep(9)
     server.silentPeer()
 
