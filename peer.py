@@ -92,45 +92,47 @@ class Peer(Thread):
         # self.sendThread.setName("SendThread")
         # self.sendThread.start()
         while True:
-            for neighbour in self.neighboursAddress:
-                self.lastSentTime[neighbour] = time.time()
-                self.sock.sendto(self.createHelloPacket(neighbour) , neighbour)
-                if neighbour in self.sentPacketsNum:
-                    self.sentPacketsNum[neighbour] += 1
-                else:
-                    self.sentPacketsNum[neighbour] = 1
-            self.sendOthers()
-            time.sleep(configs.SEND_PACKET_PERIOD)
+            if self.peerIsOnline:
+                for neighbour in self.neighboursAddress:
+                    self.lastSentTime[neighbour] = time.time()
+                    self.sock.sendto(self.createHelloPacket(neighbour) , neighbour)
+                    if neighbour in self.sentPacketsNum:
+                        self.sentPacketsNum[neighbour] += 1
+                    else:
+                        self.sentPacketsNum[neighbour] = 1
+                self.sendOthers()
+                time.sleep(configs.SEND_PACKET_PERIOD)
 
     def recieveData(self):
         while True:
-            msg = f"\nPeer {self.peerAddress}: {time.time()} \n"
-            try:
-                data, addr = self.sock.recvfrom(1024)
+            if self.peerIsOnline:
+                msg = f"\nPeer {self.peerAddress}: {time.time()} \n"
+                try:
+                    data, addr = self.sock.recvfrom(1024)
 
-                # if random.randint(1, 100) <= configs.DROP_PERCENT:
-                #     continue
+                    # if random.randint(1, 100) <= configs.DROP_PERCENT:
+                    #     continue
 
-                packet = self.decodeHelloPacket(data)
-                msg += self.handlePacketState(packet)
+                    packet = self.decodeHelloPacket(data)
+                    msg += self.handlePacketState(packet)
 
-                msg += "\tpacket " + str(packet) + "\n"
-                msg += "\trequested " + str(self.requested) + "\n"
-                self.lastRecievedTime[addr] = time.time()
-                if addr in self.recievedPacketsNum:
-                    self.recievedPacketsNum[addr] += 1
-                else:
-                    self.recievedPacketsNum[addr] = 1
-            except socket.timeout:
-                continue
+                    msg += "\tpacket " + str(packet) + "\n"
+                    msg += "\trequested " + str(self.requested) + "\n"
+                    self.lastRecievedTime[addr] = time.time()
+                    if addr in self.recievedPacketsNum:
+                        self.recievedPacketsNum[addr] += 1
+                    else:
+                        self.recievedPacketsNum[addr] = 1
+                except socket.timeout:
+                    continue
 
-            except ConnectionResetError as e:
-                print(self.peerAddress, e)
-                continue
+                except ConnectionResetError as e:
+                    print(self.peerAddress, e)
+                    continue
 
-            msg += "\tNEIGHBOURSLIST:   " + str(self.neighboursAddress) + "\n"
-            msg += "\tLASTRECIEVEDTIME:   " + str(self.lastRecievedTime) + "\n"
-            self.topology[addr] = packet['neighbours']
+                msg += "\tNEIGHBOURSLIST:   " + str(self.neighboursAddress) + "\n"
+                msg += "\tLASTRECIEVEDTIME:   " + str(self.lastRecievedTime) + "\n"
+                self.topology[addr] = packet['neighbours']
 
     def handlePacketState(self, packet):
         msg = ""
@@ -184,20 +186,18 @@ class Peer(Thread):
         # self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
         # self.sendThread.setName("SendThread")
         # self.sendThread.start()
-        self.sendThread = StoppableThread(target=self.sendData, name="SendThread")
-        time.sleep(1)
+        self.sendThread = Thread(target=self.sendData, name="SendThread")
         self.sendThread.start()
 
 
         # self.sendData()
-        self.sock.settimeout(2)
+        # self.sock.settimeout(0.1)
 
-        self.rcvThread = StoppableThread(target=self.recieveData, name="RcvThread")
-        time.sleep(1)
+        self.rcvThread = Thread(target=self.recieveData, name="RcvThread")
         self.rcvThread.start()
 
-        self.removeNeighbourThread = StoppableThread(target=self.removeOldNeighbours, name="removeNeighbourThread")
-        self.removeNeighbourThread.start()
+        self.removeNeighbourThread = Thread(target=self.removeOldNeighbours(), name="removeNeighbourThread")
+
         # self.removeOldNeighbours()
 
         # self.rcvThread = StoppableThread(target=self.recieveData)
@@ -227,10 +227,11 @@ class Peer(Thread):
         self.peerIsOnline = False
         for neighbour in self.neighboursAddress:
             self.neighboursAvailabilty[neighbour][-1][1] = time.time()
-        self.close()
+        # self.close()
 
     def restartPeer(self):
-        self.run()
+        self.peerIsOnline = True
+        # self.run()
 
     def writeJSON(self):
         filename = "./json/" + str(self.peerAddress[1]) + ".json"
