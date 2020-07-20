@@ -68,36 +68,39 @@ class Peer(Thread):
         self.tempNeighbour = None
 
     def removeOldNeighbours(self):
-        self.removeNeighbourThread = Timer(1, self.removeOldNeighbours)
-        self.removeNeighbourThread.setName("RemoveNeighbourThread")
-        self.removeNeighbourThread.start()
+        # self.removeNeighbourThread = Timer(1, self.removeOldNeighbours)
+        # self.removeNeighbourThread.setName("RemoveNeighbourThread")
+        # self.removeNeighbourThread.start()
 
-        neighboursList = list()
-        for neighbour in self.neighboursAddress:
-            t = time.time()
-            if t - self.lastRecievedTime[neighbour] > 8:
-                self.neighboursAvailabilty[neighbour][-1][1] = t
-            else:
-                neighboursList.append(neighbour)
+        while True:
+            neighboursList = list()
+            for neighbour in self.neighboursAddress:
+                t = time.time()
+                if t - self.lastRecievedTime[neighbour] > 8:
+                    self.neighboursAvailabilty[neighbour][-1][1] = t
+                else:
+                    neighboursList.append(neighbour)
 
-        self.neighboursAddress = neighboursList
+            self.neighboursAddress = neighboursList
 
-        self.requested = [neighbour for neighbour in self.requested if (time.time()-self.lastSentTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
-        self.oneDirNeighbours = [neighbour for neighbour in self.oneDirNeighbours if (time.time()-self.lastRecievedTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
+            self.requested = [neighbour for neighbour in self.requested if (time.time()-self.lastSentTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
+            self.oneDirNeighbours = [neighbour for neighbour in self.oneDirNeighbours if (time.time()-self.lastRecievedTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
+            time.sleep(1)
 
     def sendData(self):
-        self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
-        self.sendThread.setName("SendThread")
-        self.sendThread.start()
-
-        for neighbour in self.neighboursAddress:
-            self.lastSentTime[neighbour] = time.time()
-            self.sock.sendto(self.createHelloPacket(neighbour) , neighbour)
-            if neighbour in self.sentPacketsNum:
+        # self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
+        # self.sendThread.setName("SendThread")
+        # self.sendThread.start()
+        while True:
+            for neighbour in self.neighboursAddress:
+                self.lastSentTime[neighbour] = time.time()
+                self.sock.sendto(self.createHelloPacket(neighbour) , neighbour)
+                if neighbour in self.sentPacketsNum:
                     self.sentPacketsNum[neighbour] += 1
-            else:
-                self.sentPacketsNum[neighbour] = 1
-        self.sendOthers()
+                else:
+                    self.sentPacketsNum[neighbour] = 1
+            self.sendOthers()
+            time.sleep(configs.SEND_PACKET_PERIOD)
 
     def recieveData(self):
         while True:
@@ -173,15 +176,28 @@ class Peer(Thread):
     def run(self):
         self.creatSocket()
         self.peerIsOnline = True
-        # self.findNeighbours()
 
-        self.sendData()
-        self.sock.settimeout(0.1)
+        # self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
+        # self.sendThread.setName("SendThread")
+        # self.sendThread.start()
+        self.sendThread = Thread(target=self.sendData, name="SendThread")
+        self.sendThread.start()
 
-        self.rcvThread = StoppableThread(target=self.recieveData)
-        self.rcvThread.setName("RcvThread")
+
+        # self.sendData()
+        # self.sock.settimeout(0.1)
+
+        self.rcvThread = Thread(target=self.recieveData, name="RcvThread")
         self.rcvThread.start()
-        self.removeOldNeighbours()
+
+        self.removeNeighbourThread = Thread(target=self.removeOldNeighbours(), name="removeNeighbourThread")
+
+        # self.removeOldNeighbours()
+
+        # self.rcvThread = StoppableThread(target=self.recieveData)
+        # self.rcvThread.setName("RcvThread")
+        # self.rcvThread.start()
+        # self.removeOldNeighbours()
 
         # self.sock.closse()
 
