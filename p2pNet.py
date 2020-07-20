@@ -1,4 +1,5 @@
 from threading import Thread, Timer
+import threading
 import socket
 
 import random
@@ -87,7 +88,12 @@ if __name__ == '__main__':
     server.checkPeers()
     time.sleep(9)
     server.silentPeer()
+
     if input() == 'q':
+        # print(threading.enumerate())
         print("Exiting..")
         server.close()
         server.join()
+        while(len(threading.enumerate()) > 1):
+            pass
+        print(threading.enumerate())

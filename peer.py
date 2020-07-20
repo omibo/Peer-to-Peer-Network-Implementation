@@ -42,7 +42,7 @@ class Peer(Thread):
         notNeighbours = list(set(configs.allNodes).difference(self.neighboursAddress).difference([self.peerAddress]).difference(self.requested))
         if len(notNeighbours) < 1:
             return []
-        
+
         index = generateRandomIndex(0, len(notNeighbours)-1)
 
         self.tempNeighbour = notNeighbours[index]
@@ -57,7 +57,7 @@ class Peer(Thread):
             return
 
         a = self.findNewNeighbour()
-        
+
         for tempNeighbour in self.oneDirNeighbours + a:
             self.lastSentTime[tempNeighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(tempNeighbour) , tempNeighbour)
@@ -79,7 +79,7 @@ class Peer(Thread):
                 self.neighboursAvailabilty[neighbour][-1][1] = t
             else:
                 neighboursList.append(neighbour)
-        
+
         self.neighboursAddress = neighboursList
 
         self.requested = [neighbour for neighbour in self.requested if (time.time()-self.lastSentTime[neighbour] < configs.REMOVE_NEIGHBOUR_PERIOD)]
