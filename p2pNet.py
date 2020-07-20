@@ -75,18 +75,23 @@ class P2PNetwork(Thread):
         print(msg + "\n")
 
 if __name__ == '__main__':
-    server = P2PNetwork()
-    server.start()
-    time.sleep(1)
-    server.checkPeers()
-    time.sleep(9)
-    server.silentPeer()
 
-    while True:
-        if input() == 'q':
-            print("Exiting...")
-            server.close()
-            server.join()
-            while(len(enumerate()) > 1):
-                pass
-            break
+    try:
+        startTime = time.time()
+        server = P2PNetwork()
+        server.start()
+        time.sleep(1)
+        server.checkPeers()
+        time.sleep(9)
+        server.silentPeer()
+
+        deltaT = time.time() - startTime
+        time.sleep(configs.RUNNING_DURATION - deltaT)
+    except KeyboardInterrupt as e:
+        pass
+
+    print(f"Exiting after ({int(time.time() - startTime)}) seconds...")
+    server.close()
+    server.join()
+    while(len(enumerate()) > 1):
+        pass
