@@ -2,91 +2,35 @@
   "allTimeNeighbours": [
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10032,
-      "sentPackets": 8,
-      "receivedPackets": 9
+      "peerPort": 10030,
+      "sentPackets": 17,
+      "receivedPackets": 11
     },
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10031,
-      "sentPackets": 8,
-      "receivedPackets": 8
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10033,
-      "sentPackets": 6,
+      "sentPackets": 5,
       "receivedPackets": 7
-    }
-  ],
-  "currentNeighbours": [
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10032
     },
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10031
+      "peerPort": 10034,
+      "sentPackets": 14,
+      "receivedPackets": 10
     },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10033
-    }
-  ],
-  "topology": [
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10032,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10034
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10035
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10030
-        }
-      ]
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10031,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10033
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10035
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10034
-        }
-      ]
+      "sentPackets": 11,
+      "receivedPackets": 6
     },
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10033,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10031
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10034
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10035
-        }
-      ]
+      "sentPackets": 12,
+      "receivedPackets": 9
     }
-  ]
+  ],
+  "currentNeighbours": [],
+  "topology": []
 }

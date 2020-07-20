@@ -2,91 +2,23 @@
   "allTimeNeighbours": [
     {
       "peerIP": "127.0.0.1",
+      "peerPort": 10032,
+      "sentPackets": 14,
+      "receivedPackets": 15
+    },
+    {
+      "peerIP": "127.0.0.1",
       "peerPort": 10035,
-      "sentPackets": 7,
-      "receivedPackets": 6
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10031,
-      "sentPackets": 10,
-      "receivedPackets": 9
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10034,
-      "sentPackets": 8,
+      "sentPackets": 9,
       "receivedPackets": 8
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10030,
+      "sentPackets": 14,
+      "receivedPackets": 10
     }
   ],
-  "currentNeighbours": [
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10031
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10034
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10035
-    }
-  ],
-  "topology": [
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10031,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10033
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10035
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10034
-        }
-      ]
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10034,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10032
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10033
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10031
-        }
-      ]
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10035,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10032
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10031
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10033
-        }
-      ]
-    }
-  ]
+  "currentNeighbours": [],
+  "topology": []
 }
