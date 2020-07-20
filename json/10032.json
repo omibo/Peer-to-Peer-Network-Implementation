@@ -3,92 +3,28 @@
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10035,
-      "sentPackets": 14,
-      "receivedPackets": 14
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10030,
       "sentPackets": 12,
       "receivedPackets": 9
     },
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10031,
-      "sentPackets": 7,
-      "receivedPackets": 7
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10034,
-      "sentPackets": 10,
-      "receivedPackets": 6
-    }
-  ],
-  "currentNeighbours": [
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10035
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10031
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10034
-    }
-  ],
-  "topology": [
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10035,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10033
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10032
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10031
-        }
-      ]
+      "peerPort": 10033,
+      "sentPackets": 15,
+      "receivedPackets": 18
     },
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10031,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10035
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10033
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10032
-        }
-      ]
+      "sentPackets": 13,
+      "receivedPackets": 11
     },
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10034,
-      "neighbours": [
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10030
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10032
-        }
-      ]
+      "peerPort": 10030,
+      "sentPackets": 18,
+      "receivedPackets": 13
     }
-  ]
+  ],
+  "currentNeighbours": [],
+  "topology": []
 }

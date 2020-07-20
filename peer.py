@@ -110,9 +110,9 @@ class Peer(Thread):
                 try:
                     data, addr = self.sock.recvfrom(1024)
 
-                    if random.randint(1, 100) <= configs.DROP_PERCENT:
-                        continue
-
+                    # if random.randint(1, 100) <= configs.DROP_PERCENT:
+                    #     continue
+                    
                     packet = self.decodeHelloPacket(data)
                     msg += self.handlePacketState(packet)
 
@@ -200,6 +200,7 @@ class Peer(Thread):
 
         self.removeNeighbourThread = StoppableThread(target=self.removeOldNeighbours, name="removeNeighbourThread")
         self.removeNeighbourThread.start()
+
         # self.removeOldNeighbours()
 
         # self.rcvThread = StoppableThread(target=self.recieveData)
@@ -229,11 +230,13 @@ class Peer(Thread):
         self.peerIsOnline = False
         for neighbour in self.neighboursAddress:
             self.neighboursAvailabilty[neighbour][-1][1] = time.time()
-        # self.close()
+
+        self.neighboursAddress.clear()
+        self.oneDirNeighbours.clear()
+        self.requested.clear()
 
     def restartPeer(self):
         self.peerIsOnline = True
-        # self.run()
 
     def writeJSON(self):
         filename = "./json/" + str(self.peerAddress[1]) + ".json"
@@ -241,16 +244,26 @@ class Peer(Thread):
         currentNeighboursData = [{"peerIP": k[0], "peerPort": k[1]} for k in self.neighboursAddress]
         topologyData = [{"peerIP": k[0], "peerPort": k[1], "neighbours": [{"peerIP": n[0], "peerPort": n[1]} for n in self.topology[k]]} for k in self.neighboursAddress]
         data = {"allTimeNeighbours": allTimeNeighboursData, "currentNeighbours": currentNeighboursData, "topology": topologyData}
-        print(f"{self.peerAddress} ::: ")
-        print(self.neighboursAvailabilty)
+        print(f"**************************** {self.peerAddress} {self.calculateAvailibility()}  *****************************************")
         with open(filename, 'w+') as outfile:
             json.dump(data, outfile, indent=2)
 
+    def calculateAvailibility(self):
+        finalAvailablity = dict()
+        print(f"{self.peerAddress} \n {self.neighboursAvailabilty}")
+        for neighbour in self.neighboursAvailabilty:
+            sum = 0
+            for t in self.neighboursAvailabilty[neighbour]:
+                sum += t[1] - t[0]
+            finalAvailablity[neighbour] = sum
+        return finalAvailablity
+
+
     def close(self):
+        
+        self.silentPeer()
+
         self.writeJSON()
-        self.neighboursAddress.clear()
-        self.oneDirNeighbours.clear()
-        self.requested.clear()
 
         self.rcvThread.stop()
         self.sendThread.stop()

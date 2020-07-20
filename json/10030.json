@@ -2,21 +2,21 @@
   "allTimeNeighbours": [
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10032,
-      "sentPackets": 9,
-      "receivedPackets": 8
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10034,
-      "sentPackets": 9,
-      "receivedPackets": 4
-    },
-    {
-      "peerIP": "127.0.0.1",
       "peerPort": 10033,
-      "sentPackets": 9,
-      "receivedPackets": 9
+      "sentPackets": 13,
+      "receivedPackets": 14
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10031,
+      "sentPackets": 14,
+      "receivedPackets": 14
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10032,
+      "sentPackets": 13,
+      "receivedPackets": 13
     }
   ],
   "currentNeighbours": [],
