@@ -186,18 +186,20 @@ class Peer(Thread):
         # self.sendThread = Timer(configs.SEND_PACKET_PERIOD, self.sendData)
         # self.sendThread.setName("SendThread")
         # self.sendThread.start()
-        self.sendThread = Thread(target=self.sendData, name="SendThread")
+        self.sendThread = StoppableThread(target=self.sendData, name="SendThread")
+        time.sleep(0.5)
         self.sendThread.start()
 
 
         # self.sendData()
-        # self.sock.settimeout(0.1)
+        self.sock.settimeout(0.1)
 
-        self.rcvThread = Thread(target=self.recieveData, name="RcvThread")
+        self.rcvThread = StoppableThread(target=self.recieveData, name="RcvThread")
+        time.sleep(0.5)
         self.rcvThread.start()
 
-        self.removeNeighbourThread = Thread(target=self.removeOldNeighbours(), name="removeNeighbourThread")
-
+        self.removeNeighbourThread = StoppableThread(target=self.removeOldNeighbours, name="removeNeighbourThread")
+        self.removeNeighbourThread.start()
         # self.removeOldNeighbours()
 
         # self.rcvThread = StoppableThread(target=self.recieveData)
@@ -250,17 +252,17 @@ class Peer(Thread):
         self.oneDirNeighbours.clear()
         self.requested.clear()
 
-        self.sendThread.stop()
         self.rcvThread.stop()
+        self.sendThread.stop()
         self.removeNeighbourThread.stop()
 
-        # self.sendThread.join()
-        # self.rcvThread.join()
+        self.sendThread.join()
+        self.rcvThread.join()
 
-        while self.sendThread.is_alive():
-            self.sendThread.join()
+        # while self.sendThread.is_alive():
+        #     self.sendThread.join()
 
-        while self.rcvThread.is_alive():
-            self.rcvThread.join()
+        # while self.rcvThread.is_alive():
+        #     self.rcvThread.join()
 
         self.sock.close()
