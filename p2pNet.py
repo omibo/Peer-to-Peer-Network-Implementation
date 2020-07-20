@@ -39,7 +39,9 @@ class P2PNetwork(Thread):
     def run(self):
         self.startTime = time.time()
         for i in range(configs.PEERS_NUM):
-            peerThread = Peer(configs.allNodes[i])
+            address = configs.allNodes[i]
+            id = configs.allNodes[i][1] - configs.startPort
+            peerThread = Peer(address, id)
             self.threadConnection.append(peerThread)
             peerThread.start()
 
@@ -57,10 +59,9 @@ class P2PNetwork(Thread):
     def checkPeers(self):
         self.checkTimer = Timer(2, self.checkPeers)
         self.checkTimer.start()
-        notCompleted = configs.PEERS_NUM
-        msg = ""
+        msg =  "\nTime: " + str(time.time() % 60)
         for thread in self.threadConnection:
-            msg += f"\n{thread.peerAddress[1]}"
+            msg += f"\n{thread.peerAddress[1]} id: {thread.id} ({'on ' if thread.peerIsOnline else 'off'})"
             msg += "\tneighbours: {"
             for n in thread.neighboursAddress:
                 msg += f" {n[1]}"
@@ -70,20 +71,27 @@ class P2PNetwork(Thread):
             msg += " } \t oneDirNeighbour: {"
             for n in thread.oneDirNeighbours:
                 msg += f" {n[1]}"
-            msg += " } \t Time: " + str(time.time() % 60)
+            msg += " }"
         print(msg + "\n")
 
 if __name__ == '__main__':
-    server = P2PNetwork()
-    server.start()
-    time.sleep(1)
-    server.checkPeers()
-    time.sleep(9)
-    server.silentPeer()
 
-    if input() == 'q':
-        print("Exiting..")
-        server.close()
-        server.join()
-        while(len(enumerate()) > 1):
-            pass
+    try:
+        startTime = time.time()
+        server = P2PNetwork()
+        server.start()
+        time.sleep(1)
+        server.checkPeers()
+        time.sleep(9)
+        server.silentPeer()
+
+        deltaT = time.time() - startTime
+        time.sleep(configs.RUNNING_DURATION - deltaT)
+    except KeyboardInterrupt as e:
+        pass
+
+    print(f"Exiting after ({int(time.time() - startTime)}) seconds...")
+    server.close()
+    server.join()
+    while(len(enumerate()) > 1):
+        pass

@@ -11,10 +11,11 @@ from stoppableThread import StoppableThread
 import json
 
 class Peer(Thread):
-    def __init__(self, peerAddress):
+    def __init__(self, peerAddress, id):
         Thread.__init__(self)
 
         self.peerAddress = peerAddress
+        self.id = id
 
         self.oneDirNeighbours = []
         self.neighboursAddress = []
@@ -76,7 +77,7 @@ class Peer(Thread):
             neighboursList = list()
             for neighbour in self.neighboursAddress:
                 t = time.time()
-                if t - self.lastRecievedTime[neighbour] > 8:
+                if t - self.lastRecievedTime[neighbour] > configs.REMOVE_NEIGHBOUR_PERIOD:
                     self.neighboursAvailabilty[neighbour][-1][1] = t
                 else:
                     neighboursList.append(neighbour)
@@ -216,7 +217,7 @@ class Peer(Thread):
 
     def createHelloPacket(self, neighbour):
         packetData = {
-            "senderId": "",
+            "senderId": self.id,
             "senderAddress": self.peerAddress,
             "packetType": "Hello",
             "neighbours": self.neighboursAddress,
@@ -228,9 +229,16 @@ class Peer(Thread):
 
     def silentPeer(self):
         self.peerIsOnline = False
+
+        self.updateNeighboursAvailability()
+
+        self.clearNeighbours()
+
+    def updateNeighboursAvailability(self):
         for neighbour in self.neighboursAddress:
             self.neighboursAvailabilty[neighbour][-1][1] = time.time()
 
+    def clearNeighbours(self):
         self.neighboursAddress.clear()
         self.oneDirNeighbours.clear()
         self.requested.clear()
@@ -238,11 +246,23 @@ class Peer(Thread):
     def restartPeer(self):
         self.peerIsOnline = True
 
+    def makeTopologyMatrix(self):
+        matrix = [[0 for _ in range(configs.PEERS_NUM)] for _ in range(configs.PEERS_NUM)]
+        for n in self.oneDirNeighbours:
+            matrix[configs.allNodes.index(n)][configs.allNodes.index(self.peerAddress)] = 1
+        for n1 in self.topology:
+            for n2 in self.topology[n1]:
+                matrix[configs.allNodes.index(n1)][configs.allNodes.index(n2)] = 1
+                matrix[configs.allNodes.index(n2)][configs.allNodes.index(n1)] = 1
+        return matrix
+
     def writeJSON(self):
         filename = "./json/" + str(self.peerAddress[1]) + ".json"
-        allTimeNeighboursData = [{"peerIP": k[0], "peerPort": k[1], "sentPackets": self.sentPacketsNum[k], "receivedPackets": self.recievedPacketsNum[k]} for k in self.allTimeNeighbours]
-        currentNeighboursData = [{"peerIP": k[0], "peerPort": k[1]} for k in self.neighboursAddress]
-        topologyData = [{"peerIP": k[0], "peerPort": k[1], "neighbours": [{"peerIP": n[0], "peerPort": n[1]} for n in self.topology[k]]} for k in self.neighboursAddress]
+        allTimeNeighboursData = [{"peerAddress": k[0] + ":" + str(k[1]), "sentPackets": self.sentPacketsNum[k], "receivedPackets": self.recievedPacketsNum[k]} for k in self.allTimeNeighbours]
+        currentNeighboursData = [{"peerAddress": k[0] + ":" + str(k[1])} for k in self.neighboursAddress]
+        # topologyData = [{"peerIP": k[0], "peerPort": k[1], "neighbours": [{"peerIP": n[0], "peerPort": n[1]} for n in self.topology[k]]} for k in self.neighboursAddress]
+        matrix = self.makeTopologyMatrix()
+        topologyData = [{k[0] + ":" + str(k[1]): [{n[0] + ":" + str(n[1]): matrix[configs.allNodes.index(k)][configs.allNodes.index(n)]} for n in configs.allNodes] for k in configs.allNodes}]
         data = {"allTimeNeighbours": allTimeNeighboursData, "currentNeighbours": currentNeighboursData, "topology": topologyData}
         print(f"**************************** {self.peerAddress} {self.calculateAvailibility()}  *****************************************")
         with open(filename, 'w+') as outfile:
@@ -260,10 +280,6 @@ class Peer(Thread):
 
 
     def close(self):
-        
-        self.silentPeer()
-
-        self.writeJSON()
 
         self.rcvThread.stop()
         self.sendThread.stop()
@@ -271,6 +287,11 @@ class Peer(Thread):
 
         self.sendThread.join()
         self.rcvThread.join()
+
+        self.updateNeighboursAvailability()
+
+        self.writeJSON()
+        self.clearNeighbours()
 
         # while self.sendThread.is_alive():
         #     self.sendThread.join()
