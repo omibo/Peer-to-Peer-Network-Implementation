@@ -3,26 +3,26 @@
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10033,
-      "sentPackets": 29,
-      "receivedPackets": 29
+      "sentPackets": 16,
+      "receivedPackets": 18
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10031,
+      "sentPackets": 14,
+      "receivedPackets": 10
     },
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10034,
-      "sentPackets": 23,
-      "receivedPackets": 19
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10032,
-      "sentPackets": 24,
-      "receivedPackets": 25
+      "sentPackets": 9,
+      "receivedPackets": 8
     },
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10035,
       "sentPackets": 8,
-      "receivedPackets": 2
+      "receivedPackets": 7
     }
   ],
   "currentNeighbours": [
@@ -32,11 +32,7 @@
     },
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10032
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10034
+      "peerPort": 10035
     }
   ],
   "topology": [
@@ -54,32 +50,18 @@
         },
         {
           "peerIP": "127.0.0.1",
-          "peerPort": 10031
+          "peerPort": 10034
         }
       ]
     },
     {
       "peerIP": "127.0.0.1",
-      "peerPort": 10032,
+      "peerPort": 10035,
       "neighbours": [
         {
           "peerIP": "127.0.0.1",
-          "peerPort": 10031
+          "peerPort": 10033
         },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10035
-        },
-        {
-          "peerIP": "127.0.0.1",
-          "peerPort": 10030
-        }
-      ]
-    },
-    {
-      "peerIP": "127.0.0.1",
-      "peerPort": 10034,
-      "neighbours": [
         {
           "peerIP": "127.0.0.1",
           "peerPort": 10030
