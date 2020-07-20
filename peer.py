@@ -3,7 +3,7 @@ import socket, pickle
 import random
 import time
 
-from utils import generateRandomIndices
+from utils import generateRandomIndex
 import configs
 
 from stoppableThread import StoppableThread
@@ -19,6 +19,7 @@ class Peer(Thread):
         self.oneDirNeighbours = []
         self.neighboursAddress = []
         self.requested = []
+        self.tempNeighbour = None
 
         self.lastSentTime = dict()
         self.lastRecievedTime = dict()
@@ -38,28 +39,33 @@ class Peer(Thread):
         self.sock.bind(self.peerAddress)
 
     def findNewNeighbour(self):
-        notNeighbours = list(set(configs.allNodes).difference(self.neighboursAddress).difference([self.peerAddress]))
-        indices = generateRandomIndices(0, len(notNeighbours)-1, 1)
+        notNeighbours = list(set(configs.allNodes).difference(self.neighboursAddress).difference([self.peerAddress]).difference(self.requested))
+        if len(notNeighbours) < 1:
+            return []
+        
+        index = generateRandomIndex(0, len(notNeighbours)-1)
 
-        if notNeighbours[indices[0]] not in self.requested:
-            self.requested.append(notNeighbours[indices[0]])
+        self.tempNeighbour = notNeighbours[index]
+        self.requested.append(self.tempNeighbour)
 
-        self.lastSentTime[notNeighbours[indices[0]]] = time.time()
-        return notNeighbours[indices[0]]
+        self.lastSentTime[self.tempNeighbour] = time.time()
+        print(f"{self.peerAddress} has New Requested {self.tempNeighbour} Time: {time.time() % 60}")
+        return [self.tempNeighbour]
 
     def sendOthers(self):
         if configs.NEIGHBOURS_NUM <= len(self.neighboursAddress):
             return
 
         a = self.findNewNeighbour()
-        print(f"{self.peerAddress} has New Requested {a} Time: {time.time() % 60}")
-        for tempNeighbour in self.oneDirNeighbours + self.requested:
+        
+        for tempNeighbour in self.oneDirNeighbours + a:
             self.lastSentTime[tempNeighbour] = time.time()
             self.sock.sendto(self.createHelloPacket(tempNeighbour) , tempNeighbour)
             if tempNeighbour in self.sentPacketsNum:
                 self.sentPacketsNum[tempNeighbour] += 1
             else:
-                self.sentPacketsNum[tempNeighbour] = 0
+                self.sentPacketsNum[tempNeighbour] = 1
+        self.tempNeighbour = None
 
     def removeOldNeighbours(self):
         self.removeNeighbourThread = Timer(1, self.removeOldNeighbours)
@@ -90,7 +96,7 @@ class Peer(Thread):
             if neighbour in self.sentPacketsNum:
                     self.sentPacketsNum[neighbour] += 1
             else:
-                self.sentPacketsNum[neighbour] = 0
+                self.sentPacketsNum[neighbour] = 1
         self.sendOthers()
 
     def recieveData(self):
