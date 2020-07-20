@@ -117,7 +117,7 @@ class Peer(Thread):
                 if addr in self.recievedPacketsNum:
                     self.recievedPacketsNum[addr] += 1
                 else:
-                    self.recievedPacketsNum[addr] = 0
+                    self.recievedPacketsNum[addr] = 1
             except socket.timeout:
                 continue
 
