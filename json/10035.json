@@ -4,11 +4,16 @@
       "peerIP": "127.0.0.1",
       "peerPort": 10034,
       "sentPackets": 3,
+<<<<<<< HEAD
       "receivedPackets": 2
+=======
+      "receivedPackets": 3
+>>>>>>> 48e45d170aa15bbadaa7fdc47aa8a3383a05f251
     },
     {
       "peerIP": "127.0.0.1",
       "peerPort": 10031,
+<<<<<<< HEAD
       "sentPackets": 3,
       "receivedPackets": 3
     },
@@ -17,6 +22,16 @@
       "peerPort": 10030,
       "sentPackets": 5,
       "receivedPackets": 3
+=======
+      "sentPackets": 4,
+      "receivedPackets": 1
+    },
+    {
+      "peerIP": "127.0.0.1",
+      "peerPort": 10032,
+      "sentPackets": 6,
+      "receivedPackets": 5
+>>>>>>> 48e45d170aa15bbadaa7fdc47aa8a3383a05f251
     }
   ],
   "currentNeighbours": [],

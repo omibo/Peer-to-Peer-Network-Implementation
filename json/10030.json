@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "allTimeNeighbours": [
     {
       "peerIP": "127.0.0.1",
@@ -95,4 +96,9 @@
       ]
     }
   ]
+=======
+  "allTimeNeighbours": [],
+  "currentNeighbours": [],
+  "topology": []
+>>>>>>> 48e45d170aa15bbadaa7fdc47aa8a3383a05f251
 }
