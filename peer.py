@@ -76,7 +76,7 @@ class Peer(Thread):
             neighboursList = list()
             for neighbour in self.neighboursAddress:
                 t = time.time()
-                if t - self.lastRecievedTime[neighbour] > 8:
+                if t - self.lastRecievedTime[neighbour] > configs.REMOVE_NEIGHBOUR_PERIOD:
                     self.neighboursAvailabilty[neighbour][-1][1] = t
                 else:
                     neighboursList.append(neighbour)
@@ -110,8 +110,8 @@ class Peer(Thread):
                 try:
                     data, addr = self.sock.recvfrom(1024)
 
-                    # if random.randint(1, 100) <= configs.DROP_PERCENT:
-                    #     continue
+                    if random.randint(1, 100) <= configs.DROP_PERCENT:
+                        continue
 
                     packet = self.decodeHelloPacket(data)
                     msg += self.handlePacketState(packet)
