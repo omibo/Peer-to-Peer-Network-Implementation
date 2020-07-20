@@ -187,7 +187,7 @@ class Peer(Thread):
         # self.sendThread.setName("SendThread")
         # self.sendThread.start()
         self.sendThread = StoppableThread(target=self.sendData, name="SendThread")
-        time.sleep(0.5)
+        time.sleep(0.05)
         self.sendThread.start()
 
 
@@ -195,7 +195,7 @@ class Peer(Thread):
         self.sock.settimeout(0.1)
 
         self.rcvThread = StoppableThread(target=self.recieveData, name="RcvThread")
-        time.sleep(0.5)
+        time.sleep(0.05)
         self.rcvThread.start()
 
         self.removeNeighbourThread = StoppableThread(target=self.removeOldNeighbours, name="removeNeighbourThread")

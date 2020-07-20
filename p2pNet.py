@@ -35,7 +35,7 @@ class P2PNetwork(Thread):
     def restartPeer(self, peerNum):
         print("\nCREATE: " + str(self.threadConnection[peerNum].peerAddress[1]) + " TIME: ", time.time()%60)
         self.threadConnection[peerNum].restartPeer()
-        self.restartThread.cancel()
+        # self.restartThread.cancel()
 
     def run(self):
         self.startTime = time.time()
