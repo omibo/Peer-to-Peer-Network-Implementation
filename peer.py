@@ -112,7 +112,7 @@ class Peer(Thread):
 
                     # if random.randint(1, 100) <= configs.DROP_PERCENT:
                     #     continue
-                    
+
                     packet = self.decodeHelloPacket(data)
                     msg += self.handlePacketState(packet)
 
@@ -228,9 +228,16 @@ class Peer(Thread):
 
     def silentPeer(self):
         self.peerIsOnline = False
+
+        self.updateNeighboursAvailability()
+
+        self.clearNeighbours()
+    
+    def updateNeighboursAvailability(self):
         for neighbour in self.neighboursAddress:
             self.neighboursAvailabilty[neighbour][-1][1] = time.time()
 
+    def clearNeighbours(self):
         self.neighboursAddress.clear()
         self.oneDirNeighbours.clear()
         self.requested.clear()
@@ -260,10 +267,6 @@ class Peer(Thread):
 
 
     def close(self):
-        
-        self.silentPeer()
-
-        self.writeJSON()
 
         self.rcvThread.stop()
         self.sendThread.stop()
@@ -271,6 +274,11 @@ class Peer(Thread):
 
         self.sendThread.join()
         self.rcvThread.join()
+
+        self.updateNeighboursAvailability()
+
+        self.writeJSON()
+        self.clearNeighbours()
 
         # while self.sendThread.is_alive():
         #     self.sendThread.join()
