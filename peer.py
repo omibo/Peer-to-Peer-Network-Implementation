@@ -11,10 +11,11 @@ from stoppableThread import StoppableThread
 import json
 
 class Peer(Thread):
-    def __init__(self, peerAddress):
+    def __init__(self, peerAddress, id):
         Thread.__init__(self)
 
         self.peerAddress = peerAddress
+        self.id = id
 
         self.oneDirNeighbours = []
         self.neighboursAddress = []
@@ -216,7 +217,7 @@ class Peer(Thread):
 
     def createHelloPacket(self, neighbour):
         packetData = {
-            "senderId": "",
+            "senderId": self.id,
             "senderAddress": self.peerAddress,
             "packetType": "Hello",
             "neighbours": self.neighboursAddress,

@@ -39,7 +39,9 @@ class P2PNetwork(Thread):
     def run(self):
         self.startTime = time.time()
         for i in range(configs.PEERS_NUM):
-            peerThread = Peer(configs.allNodes[i])
+            address = configs.allNodes[i]
+            id = configs.allNodes[i][1] - configs.startPort
+            peerThread = Peer(address, id)
             self.threadConnection.append(peerThread)
             peerThread.start()
 
@@ -59,7 +61,7 @@ class P2PNetwork(Thread):
         self.checkTimer.start()
         msg =  "\nTime: " + str(time.time() % 60)
         for thread in self.threadConnection:
-            msg += f"\n{thread.peerAddress[1]} ({'on ' if thread.peerIsOnline else 'off'})"
+            msg += f"\n{thread.peerAddress[1]} id: {thread.id} ({'on ' if thread.peerIsOnline else 'off'})"
             msg += "\tneighbours: {"
             for n in thread.neighboursAddress:
                 msg += f" {n[1]}"
