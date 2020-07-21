@@ -111,8 +111,8 @@ class Peer(Thread):
                 try:
                     data, addr = self.sock.recvfrom(1024)
 
-                    # if random.randint(1, 100) <= configs.DROP_PERCENT:
-                    #     continue
+                    if random.randint(1, 100) <= configs.DROP_PERCENT:
+                        continue
 
                     packet = self.decodeHelloPacket(data)
                     msg += self.handlePacketState(packet)
@@ -275,7 +275,7 @@ class Peer(Thread):
             sum = 0
             for t in self.neighboursAvailabilty[neighbour]:
                 sum += t[1] - t[0]
-            finalAvailablity[neighbour] = sum
+            finalAvailablity[neighbour] = sum / configs.RUNNING_DURATION
         return finalAvailablity
 
 
