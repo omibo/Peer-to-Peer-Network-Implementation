@@ -245,17 +245,19 @@ class Peer(Thread):
         return finalAvailablity
 
     def writeJSON(self):
-        filename = "./json/" + str(self.peerAddress[1]) + ".json"
+        filename = "./json/" + self.peerAddress[0] + "_" + str(self.peerAddress[1]) + ".json"
         allTimeNeighboursData = [{"peerAddress": k[0] + ":" + str(k[1]), "sentPackets": self.sentPacketsNum[k], "receivedPackets": self.recievedPacketsNum[k]} for k in self.allTimeNeighbours]
         currentNeighboursData = [{"peerAddress": k[0] + ":" + str(k[1])} for k in self.neighboursAddress]
         matrix = self.makeTopologyMatrix()
-        topologyData = [{k[0] + ":" + str(k[1]): [{n[0] + ":" + str(n[1]): matrix[configs.allNodes.index(k)][configs.allNodes.index(n)]} for n in configs.allNodes] for k in configs.allNodes}]
+        topologyData = [{k[0] + ":" + str(k[1]): [{n[0] + ":" + str(n[1]): matrix[configs.allNodes.index(k)][configs.allNodes.index(n)]} for n in configs.allNodes]} for k in configs.allNodes]
         availability = self.calculateAvailability()
         availabilityData = [{n[0] + ":" + str(n[1]): availability[n]} for n in availability]
-        data = {"allTimeNeighbours": allTimeNeighboursData,
+        data = {"peerAddress": self.peerAddress[0] + ":" + str(self.peerAddress[1]),
+        "allTimeNeighbours": allTimeNeighboursData,
         "currentNeighbours": currentNeighboursData,
+        "availability": availabilityData,
         "topology": topologyData,
-        "availability": availabilityData}
+        }
         with open(filename, 'w+') as outfile:
             json.dump(data, outfile, indent=2)
 
