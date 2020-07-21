@@ -3,10 +3,8 @@ import socket, pickle
 import random
 import time
 
-from utils import generateRandomIndex
+import utils
 import configs
-
-from stoppableThread import StoppableThread
 
 import json
 
@@ -44,7 +42,7 @@ class Peer(Thread):
         if len(notNeighbours) < 1:
             return []
 
-        index = generateRandomIndex(0, len(notNeighbours)-1)
+        index = utils.generateRandomIndex(0, len(notNeighbours)-1)
 
         self.tempNeighbour = notNeighbours[index]
         self.requested.append(self.tempNeighbour)
@@ -69,7 +67,7 @@ class Peer(Thread):
         self.tempNeighbour = None
 
     def removeOldNeighbours(self):
-        while True:
+        while utils.run:
             neighboursList = list()
             for neighbour in self.neighboursAddress:
                 t = time.time()
@@ -85,7 +83,7 @@ class Peer(Thread):
             time.sleep(1)
 
     def sendData(self):
-        while True:
+        while utils.run:
             if self.peerIsOnline:
                 for neighbour in self.neighboursAddress:
                     self.lastSentTime[neighbour] = time.time()
@@ -98,7 +96,7 @@ class Peer(Thread):
                 time.sleep(configs.SEND_PACKET_PERIOD)
 
     def recieveData(self):
-        while True:
+        while utils.run:
             if self.peerIsOnline:
                 msg = f"\nPeer {self.peerAddress}: {time.time()} \n"
                 try:
@@ -127,6 +125,7 @@ class Peer(Thread):
                 msg += "\tNEIGHBOURSLIST:   " + str(self.neighboursAddress) + "\n"
                 msg += "\tLASTRECIEVEDTIME:   " + str(self.lastRecievedTime) + "\n"
                 self.topology[addr] = packet['neighbours']
+        self.close()
 
     def handlePacketState(self, packet):
         msg = ""
@@ -176,17 +175,17 @@ class Peer(Thread):
         self.creatSocket()
         self.peerIsOnline = True
 
-        self.sendThread = StoppableThread(target=self.sendData, name="SendThread")
+        self.sendThread = Thread(target=self.sendData, name="SendThread")
         time.sleep(0.05)
         self.sendThread.start()
 
         self.sock.settimeout(0.1)
 
-        self.rcvThread = StoppableThread(target=self.recieveData, name="RcvThread")
+        self.rcvThread = Thread(target=self.recieveData, name="RcvThread")
         time.sleep(0.05)
         self.rcvThread.start()
 
-        self.removeNeighbourThread = StoppableThread(target=self.removeOldNeighbours, name="removeNeighbourThread")
+        self.removeNeighbourThread = Thread(target=self.removeOldNeighbours, name="removeNeighbourThread")
         self.removeNeighbourThread.start()
 
 
@@ -263,14 +262,6 @@ class Peer(Thread):
 
 
     def close(self):
-
-        self.rcvThread.stop()
-        self.sendThread.stop()
-        self.removeNeighbourThread.stop()
-
-        self.sendThread.join()
-        self.rcvThread.join()
-
         self.updateNeighboursAvailability()
 
         self.writeJSON()
