@@ -8,9 +8,7 @@ from peer import Peer
 import time
 import configs
 
-
 class P2PNetwork(Thread):
-
     def __init__(self):
         Thread.__init__(self)
         self.threadConnection = []
@@ -75,7 +73,6 @@ class P2PNetwork(Thread):
         print(msg + "\n")
 
 if __name__ == '__main__':
-
     try:
         startTime = time.time()
         server = P2PNetwork()
@@ -87,6 +84,7 @@ if __name__ == '__main__':
 
         deltaT = time.time() - startTime
         time.sleep(configs.RUNNING_DURATION - deltaT)
+
     except KeyboardInterrupt as e:
         pass
 
