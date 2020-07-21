@@ -229,7 +229,7 @@ class Peer(Thread):
         matrix = [[0 for _ in range(configs.PEERS_NUM)] for _ in range(configs.PEERS_NUM)]
         for n in self.oneDirNeighbours:
             matrix[configs.allNodes.index(n)][configs.allNodes.index(self.peerAddress)] = 1
-        for n1 in self.topology:
+        for n1 in self.neighboursAddress:
             for n2 in self.topology[n1]:
                 matrix[configs.allNodes.index(n1)][configs.allNodes.index(n2)] = 1
                 matrix[configs.allNodes.index(n2)][configs.allNodes.index(n1)] = 1
