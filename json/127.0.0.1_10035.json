@@ -2,47 +2,47 @@
   "peerAddress": "127.0.0.1:10035",
   "allTimeNeighbours": [
     {
-      "peerAddress": "127.0.0.1:10030",
-      "sentPackets": 57,
-      "receivedPackets": 55
-    },
-    {
       "peerAddress": "127.0.0.1:10031",
-      "sentPackets": 62,
-      "receivedPackets": 68
+      "sentPackets": 53,
+      "receivedPackets": 51
     },
     {
-      "peerAddress": "127.0.0.1:10032",
-      "sentPackets": 39,
-      "receivedPackets": 29
+      "peerAddress": "127.0.0.1:10030",
+      "sentPackets": 20,
+      "receivedPackets": 23
+    },
+    {
+      "peerAddress": "127.0.0.1:10034",
+      "sentPackets": 45,
+      "receivedPackets": 41
     },
     {
       "peerAddress": "127.0.0.1:10033",
       "sentPackets": 58,
-      "receivedPackets": 54
+      "receivedPackets": 59
     },
     {
-      "peerAddress": "127.0.0.1:10034",
-      "sentPackets": 42,
-      "receivedPackets": 38
+      "peerAddress": "127.0.0.1:10032",
+      "sentPackets": 54,
+      "receivedPackets": 52
     }
   ],
   "currentNeighbours": [],
   "availability": [
     {
-      "127.0.0.1:10030": 0.3476744476954142
+      "127.0.0.1:10034": 0.20721187194188437
     },
     {
-      "127.0.0.1:10031": 0.4127768818537394
+      "127.0.0.1:10031": 0.32983743111292524
     },
     {
-      "127.0.0.1:10033": 0.37237972815831505
+      "127.0.0.1:10033": 0.31690065224965414
     },
     {
-      "127.0.0.1:10034": 0.2343336796760559
+      "127.0.0.1:10032": 0.33676313002904257
     },
     {
-      "127.0.0.1:10032": 0.19432316462198893
+      "127.0.0.1:10030": 0.09705668767293295
     }
   ],
   "topology": [
